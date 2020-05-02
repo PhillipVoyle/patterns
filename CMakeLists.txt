@@ -1,3 +1,9 @@
 
-add_executable(patterns patterns.cxx)
-set_property(TARGET patterns PROPERTY CXX_STANDARD 17)
+project(patterns)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+add_library(patterns INTERFACE)
+target_include_directories(patterns INTERFACE include/)
+
+add_subdirectory(tests)
