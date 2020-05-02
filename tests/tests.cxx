@@ -1,5 +1,5 @@
-#include <patterns.h>
-#include <formatting.h>
+#include <patterns/patterns.h>
+#include <patterns/formatting.h>
 
 using namespace pvoyle::patterns;
 
