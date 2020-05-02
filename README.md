@@ -35,17 +35,24 @@ Patterns can be made the same way, but if you use the special string `"var"` the
 ```
 
 ## Performing matches
-Matches of specific variables or strings are possible. There are two things to consider here, the parts of the structure you want to match, and whether you want to match a string, or a list. When calling match, you must specify a callback function which will be called in the event that your expression matches.
+Matches of specific variables or strings are possible. There are two things to consider here, the parts of the structure you want to match, and whether you want to match a string, or a list, or whether you don't care. When calling match, you must specify a callback function which will be called in the event that your expression matches, and the types specified in the callback (which must specifically be const references) will be checked against the expression before matching.
 
 ```cpp
+
     match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const std::string& s) { std::cout << s << std::endl;})); //prints "c"
     match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const std::vector<expression>& e) {})); //does not match
+    match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const expression& e) {})); //matches
+    match({"a", "b", {"test", "c"}}, {"a", "b", "var"}, std::function([&](const expression& e) {})); //also matches using same pattern
 
 ```
+
+## Building
+You don't need to build this library, because it's only a header, however there is a test project which you can build using `./build.sh`
+
+## How this works
+The unification algorithm works by performing a depth-first search of both the expression and pattern. The search strategy differs from typical recursive searches in that instead of returning from a function to continue searching, the continuation is passed explicitly as part of the method parameters. This allows the procedure to be explicit about the types of the expressions that are collected for the parameter list, and to remember those data while continuing to search.
 
 ## Reporting problems
 This is hobby project for me, but feel free to report an issue here [issues](https://github.com/PhillipVoyle/patterns/issues), or submit a pull request if you have a specific fix.
 
-
-
-
+you can also contact me at [phillipvoyle@hotmail.com](mailto:phillipvoyle@hotmail.com)

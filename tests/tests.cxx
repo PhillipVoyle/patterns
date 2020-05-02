@@ -63,5 +63,9 @@ int main(int argc, char** argv) {
 
     test_match({{{{"id"}, "id"}}},{{{{"var"}, "var"}}}, std::function([](const std::string&, const std::string&){}));
 
+    test_match({"test", {"test", "test"}}, {"var", "var"}, std::function([&](const expression& a, const expression& b) {
+      std::cout << "matched:" << a << ", and " << b << std::endl;
+    }));
+
     return 0;
 }

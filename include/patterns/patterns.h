@@ -34,8 +34,7 @@ namespace pvoyle {
         {
         public:
 
-            virtual void peel_arg(const std::string& arg, std::function<void(IMatcher& remainder)>) = 0;
-            virtual void peel_arg(const std::vector<expression>& arg, std::function<void(IMatcher& remainder)>) = 0;
+            virtual void peel_arg(const expression& arg, std::function<void(IMatcher& remainder)>) = 0;
             virtual void finish_if_done() = 0;
         };
 
@@ -77,7 +76,7 @@ namespace pvoyle {
             {
             }
                 
-            void peel_arg(const std::string& arg, std::function<void(IMatcher&)> remainder_function)
+            void peel_arg(const expression& arg, std::function<void(IMatcher&)> remainder_function)
             {
                 matches_.peel_arg(arg, std::function([&](IMatcher& remaining_args){
 
@@ -92,19 +91,6 @@ namespace pvoyle {
                 }));
             }
 
-            void peel_arg(const std::vector<expression>& arg, std::function<void(IMatcher& )> remainder_function)
-            {
-                matches_.peel_arg(arg, std::function([&](IMatcher& remaining_args){
-                    iterator_matcher next(
-                        expr_begin_,
-                        expr_end_,
-                        patt_begin_,
-                        patt_end_,
-                        remaining_args);
-                    
-                    remainder_function(next);
-                }));
-            }
             void finish_if_done()
             {
                 expr_begin_ ++;
@@ -154,35 +140,43 @@ namespace pvoyle {
             IMatcher& matches
         )
         {
-            expr.visit([&](auto&& typed_expr) {
-                patt.visit([&](auto&& typed_patt) {
-                    using TExpr = std::decay_t<decltype(typed_expr)>;
-                    using TPatt = std::decay_t<decltype(typed_patt)>;
-                    if constexpr (std::is_same_v<TPatt, std::string>)
+            patt.visit([&](auto&& typed_patt) {
+                using TPatt = std::decay_t<decltype(typed_patt)>;
+                if constexpr (std::is_same_v<TPatt, std::string>)
+                {
+                    if (typed_patt == "var")
                     {
-                        if (typed_patt == "var")
-                        {
-                            matches.peel_arg(typed_expr, [](auto && remainder) {
-                                remainder.finish_if_done();
-                            });
-                        }
-                        else if constexpr(std::is_same_v<TExpr, std::string>)
-                        {
-                            if (typed_expr == typed_patt)
+                        matches.peel_arg(expr, [](auto && remainder) {
+                            remainder.finish_if_done();
+                        });
+                    }
+                    else
+                    {
+                        expr.visit([&](auto&& typed_expr) {
+                            using TExpr = std::decay_t<decltype(typed_expr)>;
+                            if constexpr(std::is_same_v<TExpr, std::string>)
                             {
-                                matches.finish_if_done();
+                                if (typed_expr == typed_patt)
+                                {
+                                    matches.finish_if_done();
+                                }
                             }
+                        });
+                    }
+                }
+                else if constexpr(std::is_same_v<TPatt, std::vector<expression>>)
+                {
+                    expr.visit([&](auto&& typed_expr) {
+                        using TExpr = std::decay_t<decltype(typed_expr)>;
+                        if constexpr (std::is_same_v<TExpr, std::vector<expression>>)
+                        {
+                            walk_iterator(
+                                typed_expr.begin(), typed_expr.end(),
+                                typed_patt.begin(), typed_patt.end(),
+                                matches);
                         }
-                    }
-                    else if constexpr(std::is_same_v<TPatt, std::vector<expression>> && std::is_same_v<TExpr, std::vector<expression>>)
-                    {
-                        walk_iterator(
-                            typed_expr.begin(), typed_expr.end(),
-                            typed_patt.begin(), typed_patt.end(),
-                            matches
-                        );
-                    }
-                });
+                    });
+                }
             });
         }
 
@@ -206,12 +200,7 @@ namespace pvoyle {
             function_matcher(std::function<void()> function): function_(function)
             {
             }
-            void peel_arg(const std::string &expr, std::function<void(IMatcher& )> remainder)
-            {
-                fail_ = true;
-            }
-
-            void peel_arg(const std::vector<expression> &expr, std::function<void(IMatcher& remainder)> remainder)
+            void peel_arg(const expression &expr, std::function<void(IMatcher& )> remainder)
             {
                 fail_ = true;
             }
@@ -235,28 +224,28 @@ namespace pvoyle {
             {
 
             }
-            void peel_arg(const std::string &expr, std::function<void(IMatcher&)> remainder)
+            void peel_arg(const expression &expr, std::function<void(IMatcher&)> remainder)
             {
-                if constexpr (std::is_same_v<std::string, T>)
+                if constexpr (std::is_same_v<expression, T>)
                 {
+                    // no coercion required
                     auto matcher = get_function_matcher(std::function([&](const TS&...ts) {
                         function_(expr, ts...);
                     }));
                     remainder(matcher);
                 }
-                else
+                else if constexpr (std::is_same_v<std::string, T>)
                 {
-                    fail_ = true;
-                }
-            }
-            void peel_arg(const std::vector<expression> &expr, std::function<void(IMatcher&)> remainder)
-            {
-                if constexpr (std::is_same_v<std::vector<expression>, T>)
-                {
-                    auto matcher = get_function_matcher(std::function([&](const TS&...ts) {
-                        function_(expr, ts...);
-                    }));
-                    remainder(matcher);
+                    expr.visit([&] (auto && typed_expr) {
+                        using TExpr = std::decay_t<decltype(typed_expr)>;
+                        if constexpr (std::is_same_v<TExpr, T>)
+                        {
+                            auto matcher = get_function_matcher(std::function([&](const TS&...ts) {
+                                function_(typed_expr, ts...);
+                            }));
+                            remainder(matcher);
+                        }
+                    });
                 }
                 else
                 {
