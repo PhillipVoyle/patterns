@@ -1,6 +1,6 @@
 # A C++ pattern matching library
 
-baseline repository here [https://github.com/PhillipVoyle/patterns](https://github.com/PhillipVoyle/patterns)
+Baseline repository here [https://github.com/PhillipVoyle/patterns](https://github.com/PhillipVoyle/patterns)
 
 I made this library as an experiment in pattern matching. It's a header only library that will perform a unification-like structural pattern match on a string and list based expression tree, and give you back the variables that are matched. This is currently highly WIP, and I'd suggest you don't use it, but if you feel up to working with something that may contain problems, read on.
 
@@ -43,5 +43,9 @@ Matches of specific variables or strings are possible. There are two things to c
 
 ```
 
-## Patches and pull requests
+## Reporting problems
+This is hobby project for me, but feel free to report an issue here [issues](https://github.com/PhillipVoyle/patterns/issues), or submit a pull request if you have a specific fix.
+
+
+
 
