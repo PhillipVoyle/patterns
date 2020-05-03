@@ -115,7 +115,7 @@ namespace pvoyle {
             if ((expr_begin == expr_end) && (patt_begin == patt_end)) {
                 matches.finish_if_done();
             }
-            else if ((expr_begin == expr_end) && (patt_begin == patt_end)) {
+            else if ((expr_begin == expr_end) || (patt_begin == patt_end)) {
                 return;
             }
             else {
