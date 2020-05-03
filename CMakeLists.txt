@@ -7,3 +7,5 @@ add_library(patterns INTERFACE)
 target_include_directories(patterns INTERFACE include/)
 
 add_subdirectory(tests)
+add_subdirectory(examples)
+
