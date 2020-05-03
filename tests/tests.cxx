@@ -34,36 +34,36 @@ int main(int argc, char** argv) {
         std::cout << "ok" << std::endl;
     }));
 
-    test_match("expr", "var",  std::function([](const std::string& v) {
+    test_match("expr", "?",  std::function([](const std::string& v) {
         std::cout << "ok:" << v << std::endl;
     }));
 
-    test_match("expr", "var", std::function([](const std::vector<expression>& v) {
+    test_match("expr", "?", std::function([](const std::vector<expression>& v) {
         std::cout << "fail:" << std::endl;
     }));
 
-    test_match("expr", {"var"}, std::function([](const std::string& v) {
+    test_match("expr", {"?"}, std::function([](const std::string& v) {
         std::cout << "fail" << std::endl;
     }));
 
-    test_match({"expr"}, "var", std::function([](const std::string& v) {
+    test_match({"expr"}, "?", std::function([](const std::string& v) {
         std::cout << "fail" << std::endl;
 
     }));
 
-    test_match({"expr"}, "var", std::function([](const std::vector<expression>& v) {
+    test_match({"expr"}, "?", std::function([](const std::vector<expression>& v) {
         std::cout << "ok" << std::endl;
     }));
 
-    test_match({"id", "identifier"}, {"id", "var"}, std::function([](const std::string& id){
+    test_match({"id", "identifier"}, {"id", "?"}, std::function([](const std::string& id){
         std::cout << id << std::endl;
     }));
 
     test_match({{{{"id"}, "id"}}},{{{{"id"}, "id"}}}, std::function([](){}));
 
-    test_match({{{{"id"}, "id"}}},{{{{"var"}, "var"}}}, std::function([](const std::string&, const std::string&){}));
+    test_match({{{{"id"}, "id"}}},{{{{"?"}, "?"}}}, std::function([](const std::string&, const std::string&){}));
 
-    test_match({"test", {"test", "test"}}, {"var", "var"}, std::function([&](const expression& a, const expression& b) {
+    test_match({"test", {"test", "test"}}, {"?", "?"}, std::function([&](const expression& a, const expression& b) {
       std::cout << "matched:" << a << ", and " << b << std::endl;
     }));
 

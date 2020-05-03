@@ -144,7 +144,7 @@ namespace pvoyle {
                 using TPatt = std::decay_t<decltype(typed_patt)>;
                 if constexpr (std::is_same_v<TPatt, std::string>)
                 {
-                    if (typed_patt == "var")
+                    if (typed_patt == "?")
                     {
                         matches.peel_arg(expr, [](auto && remainder) {
                             remainder.finish_if_done();

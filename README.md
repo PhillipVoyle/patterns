@@ -27,11 +27,11 @@ Expressions and patterns share the same type `pvoyle::patterns::expression`, whi
     expression list_list_expr = {{"test", "test"}, {"test", "test"}}; // A more complicated list
 ```
 
-Patterns can be made the same way, but if you use the special string `"var"` the pattern will attempt to match an expression at that node.
+Patterns can be made the same way, but if you use the special string `"?"` the pattern will attempt to match an expression at that node.
 
 ```cpp
     expression string_pattern = "test"; // a pattern that expects an exact match
-    expression list_pattern = {"test", "var"}; // a pattern that allows one variable
+    expression list_pattern = {"test", "?"}; // a pattern that allows one variable
 ```
 
 ## Performing matches
@@ -39,10 +39,10 @@ Matches of specific variables or strings are possible. There are two things to c
 
 ```cpp
 
-    match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const std::string& s) { std::cout << s << std::endl;})); //prints "c"
-    match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const std::vector<expression>& e) {})); //does not match
-    match({"a", "b", "c"}, {"a", "b", "var"}, std::function([&](const expression& e) {})); //matches
-    match({"a", "b", {"test", "c"}}, {"a", "b", "var"}, std::function([&](const expression& e) {})); //also matches using same pattern
+    match({"a", "b", "c"}, {"a", "b", "?"}, std::function([&](const std::string& s) { std::cout << s << std::endl;})); //prints "c"
+    match({"a", "b", "c"}, {"a", "b", "?"}, std::function([&](const std::vector<expression>& e) {})); //does not match
+    match({"a", "b", "c"}, {"a", "b", "?"}, std::function([&](const expression& e) {})); //matches
+    match({"a", "b", {"test", "c"}}, {"a", "b", "?"}, std::function([&](const expression& e) {})); //also matches using same pattern
 
 ```
 
