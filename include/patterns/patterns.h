@@ -234,7 +234,7 @@ namespace pvoyle {
                     }));
                     remainder(matcher);
                 }
-                else if constexpr (std::is_same_v<std::string, T>)
+                else
                 {
                     expr.visit([&] (auto && typed_expr) {
                         using TExpr = std::decay_t<decltype(typed_expr)>;
@@ -245,11 +245,11 @@ namespace pvoyle {
                             }));
                             remainder(matcher);
                         }
+                        else
+                        {
+                            fail_ = true;
+                        }
                     });
-                }
-                else
-                {
-                    fail_ = true;
                 }
             }
 
