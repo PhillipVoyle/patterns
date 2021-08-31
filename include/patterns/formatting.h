@@ -31,6 +31,10 @@ namespace pvoyle {
             void operator()(const std::string& s)  {
                 os_ << s;
             }
+
+            void operator()(int n) {
+                os_ << n;
+            }
         };
 
         std::ostream& operator<<(std::ostream& os, const expression& expr) {

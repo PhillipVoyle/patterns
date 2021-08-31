@@ -4,11 +4,11 @@
 using namespace pvoyle::patterns;
 
 template<typename...T>
-bool test_match(const expression& expr, const expression& patt, std::function<void(const T&...)> func) {
+bool test_match(const expression& expr, const expression& patt, std::function<void(T...)> func) {
 
     bool called = false;
 
-    auto matcher = get_function_matcher(std::function([&](const T&...t){
+    auto matcher = get_function_matcher(std::function([&](T...t){
         func(t...);
 
         called = true;
@@ -35,6 +35,10 @@ int main(int argc, char** argv) {
     }));
 
     test_match("expr", "?",  std::function([](const std::string& v) {
+        std::cout << "ok:" << v << std::endl;
+    }));
+
+    test_match("expr", "?",  std::function([](std::string v) {
         std::cout << "ok:" << v << std::endl;
     }));
 
@@ -65,6 +69,22 @@ int main(int argc, char** argv) {
 
     test_match({"test", {"test", "test"}}, {"?", "?"}, std::function([&](const expression& a, const expression& b) {
       std::cout << "matched:" << a << ", and " << b << std::endl;
+    }));
+
+    test_match(1, "?", std::function([](const std::string& s) {
+        std::cout << "fail" << std::endl;
+    }));
+
+    test_match("testing", "?", std::function([](int n) {
+        std::cout << "fail" << std::endl;
+    }));
+
+    test_match(500, "?", std::function([](int n) {
+        std::cout << "ok" << std::endl;
+    }));
+
+    test_match({ "test", 82 }, {"test","?"}, std::function([](int n) {
+        std::cout << "ok" << std::endl;
     }));
 
     return 0;
