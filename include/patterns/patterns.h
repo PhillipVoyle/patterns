@@ -11,11 +11,13 @@ namespace pvoyle {
     namespace patterns {
 
         class expression {
-            std::variant<std::vector<expression>, std::string> v_;
+            std::variant<std::vector<expression>, std::string, int> v_;
         public:
             expression(const std::vector<expression>& v): v_(v) {
             }
             expression(const std::string& s): v_(s) {
+            }
+            expression(int i): v_(i) {
             }
             expression(const char* szVariant): v_(std::string(szVariant)) {
             }
@@ -164,6 +166,19 @@ namespace pvoyle {
                         });
                     }
                 }
+                else if constexpr (std::is_same_v<TPatt, int>)
+                {
+                    expr.visit([&](auto&& typed_expr) {
+                        using TExpr = std::decay_t<decltype(typed_expr)>;
+                        if constexpr(std::is_same_v<TExpr, int>)
+                        {
+                            if (typed_expr == typed_patt)
+                            {
+                                matches.finish_if_done();
+                            }
+                        }
+                    });
+                }
                 else if constexpr(std::is_same_v<TPatt, std::vector<expression>>)
                 {
                     expr.visit([&](auto&& typed_expr) {
@@ -189,7 +204,7 @@ namespace pvoyle {
         function_matcher get_function_matcher(std::function<void()> func);
 
         template<typename T, typename...TS>
-        function_matcher_var<T, TS...> get_function_matcher(std::function<void(const T&, const TS&...)> func);
+        function_matcher_var<T, TS...> get_function_matcher(std::function<void(const T&, TS...)> func);
 
         class function_matcher: public IMatcher
         {
@@ -217,19 +232,21 @@ namespace pvoyle {
         class function_matcher_var : public IMatcher
         {
             bool fail_ = false;
-            std::function<void(const T& ,const TS&...)> function_;
+            std::function<void(T ,TS...)> function_;
         public:
 
-            function_matcher_var(std::function<void(const T& ,const TS&...)> function): function_(function)
+            function_matcher_var(std::function<void(const T& ,TS...)> function): function_(function)
             {
-
+            }
+            function_matcher_var(std::function<void(T ,TS...)> function): function_(function)
+            {
             }
             void peel_arg(const expression &expr, std::function<void(IMatcher&)> remainder)
             {
                 if constexpr (std::is_same_v<expression, T>)
                 {
                     // no coercion required
-                    auto matcher = get_function_matcher(std::function([&](const TS&...ts) {
+                    auto matcher = get_function_matcher(std::function([&](TS...ts) {
                         function_(expr, ts...);
                     }));
                     remainder(matcher);
@@ -240,7 +257,7 @@ namespace pvoyle {
                         using TExpr = std::decay_t<decltype(typed_expr)>;
                         if constexpr (std::is_same_v<TExpr, T>)
                         {
-                            auto matcher = get_function_matcher(std::function([&](const TS&...ts) {
+                            auto matcher = get_function_matcher(std::function([&](TS...ts) {
                                 function_(typed_expr, ts...);
                             }));
                             remainder(matcher);
@@ -266,14 +283,19 @@ namespace pvoyle {
         }
 
         template<typename T, typename...TS>
-        function_matcher_var<T, TS...> get_function_matcher(std::function<void(const T&, const TS&...)> func)
+        function_matcher_var<T, TS...> get_function_matcher(std::function<void(const T&, TS...)> func)
         {
             return function_matcher_var<T, TS...>(func);
         }
 
+        template<typename T, typename...TS>
+        function_matcher_var<T, TS...> get_function_matcher(std::function<void(T, TS...)> func)
+        {
+            return function_matcher_var<T, TS...>(func);
+        }
 
         template<typename...T>
-        void match(const expression& expr, const expression& patt, std::function<void(const T&...)> func) {
+        void match(const expression& expr, const expression& patt, std::function<void(T...)> func) {
             auto matcher = get_function_matcher(func);
             walk_hierarchy(expr, patt, matcher);
         }
